@@ -1,0 +1,65 @@
+name: Smartdog Playwright Test Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright Tests (API & UI E2E)
+      run: npx playwright test
+
+    - name: Upload Playwright Report Artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+  deploy-report:
+    needs: test
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - name: Download Playwright Report Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: playwright-report
+        path: ./public-report
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload Artifact for GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './public-report'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

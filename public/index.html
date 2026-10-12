@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smartdog AI Workspace</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
+    .container { max-width: 920px; margin: 0 auto; background: #1e293b; padding: 28px; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    h1 { color: #f8fafc; font-size: 26px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    p.subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+    .card { background: #0f172a; border: 1px solid #334155; padding: 20px; border-radius: 8px; margin-bottom: 24px; }
+    h3 { margin-top: 0; color: #38bdf8; font-size: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #cbd5e1; font-size: 13px; }
+    input, select, textarea { width: 100%; padding: 10px 12px; background: #1e293b; border: 1px solid #475569; color: #f8fafc; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; font-size: 14px; }
+    input:focus, select:focus, textarea:focus { border-color: #38bdf8; outline: none; }
+    button { background: #0284c7; color: white; border: none; padding: 10px 20px; font-weight: 600; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+    button:hover { background: #0369a1; }
+    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .status-pending { background: #451a03; color: #fbbf24; border: 1px solid #78350f; }
+    .status-completed { background: #064e3b; color: #34d399; border: 1px solid #065f46; }
+    .status-error { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; }
+    .translation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+    .rtl { direction: rtl; text-align: right; }
+    #error-banner { display: none; margin-top: 14px; padding: 12px; background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; border-radius: 6px; font-size: 13px; }
+    #quality-score { margin-left: 12px; font-weight: 600; color: #34d399; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🐶 Smartdog AI Localization Workspace</h1>
+    <p class="subtitle">Enterprise AI-native platform for content translation and quality estimation</p>
+
+    <!-- 1. Create Project Section -->
+    <div class="card" id="project-section">
+      <h3>1. Create Translation Project</h3>
+
+      <label for="project-name">Project Name</label>
+      <input type="text" id="project-name" data-testid="st-project-name" placeholder="e.g. Mobile App Enterprise Localization">
+
+      <label for="target-language">Target Language</label>
+      <select id="target-language" data-testid="st-target-language">
+        <option value="de">German (DE)</option>
+        <option value="es">Spanish (ES)</option>
+        <option value="ar">Arabic (AR - RTL)</option>
+      </select>
+
+      <button id="create-project-btn" data-testid="st-create-project-btn">Create Project</button>
+    </div>
+
+    <!-- 2. AI Translation Editor Section -->
+    <div class="card" id="editor-section" style="display: none;" data-testid="st-editor-section">
+      <h3>
+        2. AI Translation Editor
+        <span id="project-status" data-testid="st-project-status" class="status-badge status-pending">Pending</span>
+      </h3>
+
+      <div class="translation-grid">
+        <div>
+          <label for="source-text">Source Text (English)</label>
+          <textarea id="source-text" data-testid="st-source-text" rows="4">Smartdog provides AI-native workflows for global enterprise teams.</textarea>
+        </div>
+        <div>
+          <label for="target-text">Target Text</label>
+          <textarea id="target-text" data-testid="st-target-text" rows="4" placeholder="Translation will appear here..."></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; display: flex; align-items: center;">
+        <button id="translate-ai-btn" data-testid="st-translate-ai-btn">⚡ Translate with Smartdog AI</button>
+        <span id="quality-score" data-testid="st-quality-score"></span>
+      </div>
+
+      <div id="error-banner" data-testid="st-error-banner">
+        ⚠️ Smartdog AI Engine temporarily unavailable. Switched to Human Translator Fallback.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('create-project-btn').addEventListener('click', () => {
+      const name = document.getElementById('project-name').value;
+      if (!name) return alert('Please enter a project name');
+      document.getElementById('editor-section').style.display = 'block';
+    });
+
+    document.getElementById('translate-ai-btn').addEventListener('click', async () => {
+      const source = document.getElementById('source-text').value;
+      const lang = document.getElementById('target-language').value;
+      const targetTextarea = document.getElementById('target-text');
+      const statusBadge = document.getElementById('project-status');
+      const errorBanner = document.getElementById('error-banner');
+
+      if (lang === 'ar') {
+        targetTextarea.classList.add('rtl');
+      } else {
+        targetTextarea.classList.remove('rtl');
+      }
+
+      try {
+        const res = await fetch(`/api/ai-translate?lang=${lang}`, {
+          method: 'POST',
+          body: JSON.stringify({ text: source }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!res.ok) throw new Error('AI Service Error');
+
+        const data = await res.json();
+        targetTextarea.value = data.translatedText;
+        document.getElementById('quality-score').innerText = `AI Accuracy: ${data.accuracy}%`;
+        statusBadge.innerText = 'Completed';
+        statusBadge.className = 'status-badge status-completed';
+        errorBanner.style.display = 'none';
+      } catch (err) {
+        statusBadge.innerText = 'Fallback Mode';
+        statusBadge.className = 'status-badge status-error';
+        errorBanner.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
