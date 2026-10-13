@@ -41,8 +41,8 @@ export default defineConfig({
 
   // Playwright samostalno podiže lokalni HTTP server pre pokretanja UI testova
   webServer: {
-    command: 'npx serve public -p 8080',
-    port: 8080,
-    reuseExistingServer: !ENV.IS_CI,
-  },
+      command: 'npx serve app -p 8080',
+      port: 8080,
+      reuseExistingServer: !ENV.IS_CI,
+    },
 });

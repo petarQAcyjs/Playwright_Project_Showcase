@@ -17,24 +17,16 @@ A production-ready, highly extensible end-to-end (E2E) and REST API test automat
 ## 🏗️ Repository Architecture
 
 ```smartdog-playwright-framework/
-├── .github/
-│   └── workflows/
-│       └── playwright-ci.yml       # GitHub Actions CI/CD Pipeline
-├── config/
-│   └── env.config.ts              # Environment management (API & App URLs)
-├── public/
-│   └── index.html                 # Smartdog Localization Workspace Web App
+├── app/             
+│   └── index.html
 ├── src/
 │   ├── api/
-│   │   ├── clients/               # API Clients (TranslationApiClient.ts)
-│   │   └── models/                # TypeScript Interfaces & DTOs
-│   ├── fixtures/                  # Playwright Custom Fixtures (test.fixture.ts)
-│   └── pages/                     # Page Object Models (WorkspacePage.ts)
+│   ├── fixtures/
+│   └── pages/
 ├── tests/
-│   ├── api/                       # REST API Test Suite
-│   └── e2e/                       # End-to-End & Mocking Test Suite
-├── playwright.config.ts           # Central Playwright Configuration
-├── tsconfig.json                  # TypeScript Aliases & Options
+│   └── e2e/
+├── .github/
+├── playwright.config.ts
 └── package.json
 ```
 
